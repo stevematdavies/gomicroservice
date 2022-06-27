@@ -56,7 +56,7 @@ func (l *LogEntry) All()([]*LogEntry, error) {
 	c := client.Database("logs").Collection("logs")
 	o := options.Find()
 	o.SetSort(bson.D{primitive.E{Key: "created_at", Value: -1}})
-	
+
 	x, err := c.Find(context.TODO(), bson.D{}, o)
 	if err != nil {
 		log.Println("Error finding all docs", err)
@@ -76,4 +76,59 @@ func (l *LogEntry) All()([]*LogEntry, error) {
 		logs = append(logs, &item)
 	}
 	return logs, nil
+}
+
+func(l *LogEntry) GetOne(id string) (*LogEntry, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 15)
+	defer cancel()
+
+	c := client.Database("logs").Collection("logs")
+	d, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}	
+	var de LogEntry
+	if err := c.FindOne(ctx, bson.M{"_id": d}).Decode(&de);err != nil {
+		log.Printf("Error finding doc with id: %s >, %s", id, err)
+		return nil, err	
+	}
+	return &de, nil
+}
+
+func(l *LogEntry) DropCollection() error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 15)
+	defer cancel()
+
+	c := client.Database("logs").Collection("logs")
+	if err := c.Drop(ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
+func(l *LogEntry) Update() (*mongo.UpdateResult, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 15)
+	defer cancel()
+
+	c := client.Database("logs").Collection("logs")
+	d, err := primitive.ObjectIDFromHex(l.ID)
+	if err != nil {
+		return nil, err
+	}
+	r, err := c.UpdateOne(
+		ctx,
+		bson.M{"_id": d},
+		bson.D{
+			{"$set", bson.D{
+				{"name", l.Name},
+				{"data", l.Data},
+				{"updated_at", time.Now()},
+			}},
+		},
+	)	
+
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
 }
