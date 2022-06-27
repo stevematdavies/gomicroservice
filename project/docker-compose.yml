@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+
+  db:
+      container_name: "db"
+      image: 'postgres:14.4'
+      ports:
+        - "5432:5432"
+      restart: always
+      environment:  
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: password
+        POSTGRES_DB: gsmdb
+        POSTGRES_HOST_AUTH_METHOD: trust
+      volumes:
+        - ./db:/var/lib/postgresql/data/
+
+  broker:
+    container_name: "broker"
+    build:
+      context: ./../broker-service
+      dockerfile: ./../broker-service/broker-service.dockerfile
+    ports:
+      - "8081:8081"
+    restart: always
+
+  auth:
+    container_name: "auth"
+    build:
+      context: ./../authentication-service
+      dockerfile: ./../authentication-service/authentication-service.dockerfile
+    ports:
+      - "8082:8082"
+    restart: always
+    environment:
+      DSN: "host=db port=5432 user=postgres password=password dbname=gsmdb sslmode=disable timezone=UTC connect_timeout=5"
+  
+volumes:
+  db:
+   driver: local
