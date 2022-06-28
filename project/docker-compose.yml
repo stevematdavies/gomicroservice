@@ -47,3 +47,9 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: logdb
     volumes:
       -  ./db/mongo/:/data/db
+  logger:
+    container_name: "logger"
+    build:
+      context: ./../logger-service
+      dockerfile: ./../logger-service/logger-service.dockerfile
+    restart: always

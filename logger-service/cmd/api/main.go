@@ -39,15 +39,15 @@ func connectToMongo() (*mongo.Client, error) {
 	return c, nil
 }
 
-func (app *Config) serve(){
-	srv := &http.Server{
-		Addr: fmt.Sprintf(":%s",webPort),
-		Handler: app.routes(),
-	}
-	if err := srv.ListenAndServe(); err != nil {
-		log.Panic(err)
-	}
-}
+// func (app *Config) serve(){
+// 	srv := &http.Server{
+// 		Addr: fmt.Sprintf(":%s",webPort),
+// 		Handler: app.routes(),
+// 	}
+// 	if err := srv.ListenAndServe(); err != nil {
+// 		log.Panic(err)
+// 	}
+// }
 
 func main() {
 	mongoClient, err := connectToMongo()
@@ -67,6 +67,14 @@ func main() {
 	app := Config{
 		Models: data.New(client),
 	}
+	log.Println("Starting Logging service on port: ",webPort)
+	srv := &http.Server{
+		Addr: fmt.Sprintf(":%s",webPort),
+		Handler: app.routes(),
+	}
+	if err = srv.ListenAndServe(); err != nil {
+		log.Panic(err)
+	}
 
-	go app.serve()
+	// go app.serve()
 }
