@@ -91,7 +91,36 @@
         })
 
         logBtn.addEventListener("click", async() => {
-            alert("Log Button Works!")
+            const headers = new Headers();
+            headers.append("Content-Type", "application/json")
+          
+            const payload = {
+                action: "log",
+                log: {
+                    name: "Logger Button Clicked",
+                    data: `Button was clicked at: ${new Date().toLocaleTimeString()}`
+                }
+             }
+
+             const body = {
+                method: "POST",
+                body: JSON.stringify(payload),
+                headers
+             }
+       
+            try {
+                const request = await fetch("http://localhost:8081/handle",body)
+                const data = await request.json()
+                sent.innerHTML = JSON.stringify(payload, undefined, 4)
+                recieved.innerHTML = JSON.stringify(data, undefined, 4)
+                if(data.error){
+                    output.innerHTML += `<br><strong>Error: </strong>${data.message}`
+                } else {
+                      output.innerHTML += `<br><strong>Response from the logger service</strong>: <span class="badge bg-success">${data.message}</span>`
+                }
+            } catch(e) { 
+                output.innerHTML +=  `<br><br>Error: <span class="badge bg-danger">${e}</span>`
+            }
         })
     </script>
 {{end}}
