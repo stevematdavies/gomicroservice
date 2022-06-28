@@ -3,7 +3,7 @@ version: '3.8'
 services:
 
   db:
-      container_name: "db"
+      container_name: "postgres"
       image: 'postgres:14.4'
       ports:
         - "5432:5432"
@@ -14,7 +14,7 @@ services:
         POSTGRES_DB: gsmdb
         POSTGRES_HOST_AUTH_METHOD: trust
       volumes:
-        - ./db:/var/lib/postgresql/data/
+        - ./db/postgres/:/var/lib/postgresql/data/
 
   broker:
     container_name: "broker"
@@ -35,7 +35,15 @@ services:
     restart: always
     environment:
       DSN: "host=db port=5432 user=postgres password=password dbname=gsmdb sslmode=disable timezone=UTC connect_timeout=5"
-  
-volumes:
-  db:
-   driver: local
+    
+  mongo:
+    image: 'mongo:4.2.16-bionic'
+    container_name: "mongo"
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: logdb
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: logdb
+    volumes:
+      -  ./db/mongo/:/data/db
