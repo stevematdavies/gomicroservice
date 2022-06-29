@@ -10,9 +10,9 @@ type JSONPayload struct {
 	Data string `json:"data"`
 }
 
-func (app *Config) WriteLog(w http.ResponseWriter, r *http.Request)  {
+func (app *Config) WriteLog(w http.ResponseWriter, r *http.Request) {
 	var payload JSONPayload
-	_ = app.readJSON(w,r, &payload)
+	_ = app.readJSON(w, r, &payload)
 
 	evt := data.LogEntry{
 		Name: payload.Name,
@@ -25,7 +25,7 @@ func (app *Config) WriteLog(w http.ResponseWriter, r *http.Request)  {
 	}
 
 	rs := jsonResponse{
-		Error: false,
+		Error:   false,
 		Message: " <> LOGGED <> ",
 	}
 

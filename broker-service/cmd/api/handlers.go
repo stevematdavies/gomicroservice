@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -107,16 +108,19 @@ func (app *Config) log(w http.ResponseWriter, l LogPayload) {
 	request.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
+
+	fmt.Println("Client is ready")
+
 	response, err := client.Do(request)
 	if err != nil {
-		log.Println(err)
+		fmt.Println("Oh crap something went wrong!")
 		app.errorJSON(w, err)
 		return
 	}
 
 	defer response.Body.Close()
 
-	if response.StatusCode == http.StatusAccepted {
+	if response.StatusCode != http.StatusAccepted {
 		app.errorJSON(w, err)
 		return
 	}
