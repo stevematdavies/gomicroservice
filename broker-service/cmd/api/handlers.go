@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 )
@@ -15,7 +16,12 @@ type AuthPayload struct {
 }
 
 type LogPayload struct {
-	Name string `json:"email"`
+	Name string `json:"name"`
+	Data string `json:"data"`
+}
+
+type MailPayload struct {
+	Name string `json:"name"`
 	Data string `json:"data"`
 }
 
@@ -23,9 +29,10 @@ type RequestPayload struct {
 	Action string      `json:"action"`
 	Auth   AuthPayload `json:"auth,omitempty"`
 	Log    LogPayload  `json:"log,omitempty"`
+	Mail   MailPayload `json:"mail,omitempty"`
 }
 
-func (app *Config) Broker(w http.ResponseWriter, r *http.Request) {
+func (app *Config) Broker(w http.ResponseWriter, _ *http.Request) {
 	payload := jsonResponse{
 		Error:   false,
 		Message: "Hit the broker",
@@ -38,7 +45,7 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	var requestPayload RequestPayload
 
 	if err := app.readJSON(w, r, &requestPayload); err != nil {
-		app.errorJSON(w, err)
+		_ = app.errorJSON(w, err)
 		return
 	}
 
@@ -47,8 +54,10 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 		app.authenticate(w, requestPayload.Auth)
 	case "log":
 		app.log(w, requestPayload.Log)
+	case "mail":
+		app.email(w, requestPayload.Mail)
 	default:
-		app.errorJSON(w, errors.New("unknown action"))
+		_ = app.errorJSON(w, errors.New("unknown action"))
 	}
 }
 
@@ -57,34 +66,40 @@ func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 	request, err := http.NewRequest("POST", "http://auth:8082/authenticate", bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Println(err)
-		app.errorJSON(w, err)
+		_ = app.errorJSON(w, err)
 	}
 
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
 		log.Println(err)
-		app.errorJSON(w, err)
+		_ = app.errorJSON(w, err)
 		return
 	}
 
-	defer response.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			_ = app.errorJSON(w, err)
+			return
+		}
+	}(response.Body)
 
 	if response.StatusCode == http.StatusUnauthorized {
-		app.errorJSON(w, errors.New("Invalid credentials"))
+		_ = app.errorJSON(w, errors.New("Invalid credentials"))
 	} else if response.StatusCode != http.StatusAccepted {
-		app.errorJSON(w, errors.New("Error calling auth service"))
+		_ = app.errorJSON(w, errors.New("Error calling auth service"))
 	}
 
 	var jsonFromService jsonResponse
 
 	if err := json.NewDecoder(response.Body).Decode(&jsonFromService); err != nil {
-		app.errorJSON(w, err)
+		_ = app.errorJSON(w, err)
 		return
 	}
 
 	if jsonFromService.Error {
-		app.errorJSON(w, err, http.StatusUnauthorized)
+		_ = app.errorJSON(w, err, http.StatusUnauthorized)
 		return
 	}
 
@@ -94,7 +109,7 @@ func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 	payload.Message = "Authenticated!"
 	payload.Data = jsonFromService.Data
 
-	app.writeJSON(w, http.StatusAccepted, payload)
+	_ = app.writeJSON(w, http.StatusAccepted, payload)
 }
 
 func (app *Config) log(w http.ResponseWriter, l LogPayload) {
@@ -102,7 +117,7 @@ func (app *Config) log(w http.ResponseWriter, l LogPayload) {
 	request, err := http.NewRequest("POST", "http://logger:8083/log", bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Println(err)
-		app.errorJSON(w, err)
+		_ = app.errorJSON(w, err)
 	}
 
 	request.Header.Set("Content-Type", "application/json")
@@ -114,14 +129,20 @@ func (app *Config) log(w http.ResponseWriter, l LogPayload) {
 	response, err := client.Do(request)
 	if err != nil {
 		fmt.Println("Oh crap something went wrong!")
-		app.errorJSON(w, err)
+		_ = app.errorJSON(w, err)
 		return
 	}
 
-	defer response.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			_ = app.errorJSON(w, err)
+			return
+		}
+	}(response.Body)
 
 	if response.StatusCode != http.StatusAccepted {
-		app.errorJSON(w, err)
+		_ = app.errorJSON(w, err)
 		return
 	}
 
@@ -129,5 +150,9 @@ func (app *Config) log(w http.ResponseWriter, l LogPayload) {
 	payload.Error = false
 	payload.Message = "Logged!"
 
-	app.writeJSON(w, http.StatusAccepted, payload)
+	_ = app.writeJSON(w, http.StatusAccepted, payload)
+}
+
+func (app *Config) email(w http.ResponseWriter, a MailPayload) {
+	return
 }

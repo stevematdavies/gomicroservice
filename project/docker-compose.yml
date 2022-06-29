@@ -68,3 +68,12 @@ services:
       context: ./../mailer-service
       dockerfile: ./../mailer-service/mailer-service.dockerfile
     restart: always
+    environment:
+      MAIL_DOMAIN: localhost
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      MAIL_ENCRYPTION: none
+      MAIL_FROM_NAME: "John Smith"
+      MAIL_FROM_ADDRESS: "john.smith@example.com"
