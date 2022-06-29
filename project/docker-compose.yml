@@ -61,3 +61,10 @@ services:
       context: ./../logger-service
       dockerfile: ./../logger-service/logger-service.dockerfile
     restart: always
+
+  mailer:
+    container_name: "mailer"
+    build:
+      context: ./../mailer-service
+      dockerfile: ./../mailer-service/mailer-service.dockerfile
+    restart: always
