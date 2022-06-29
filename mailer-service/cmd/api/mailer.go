@@ -29,7 +29,7 @@ type Message struct {
 	DataMap     map[string]any
 }
 
-func (m *Mail) SendMail(msg Message) error {
+func (m *Mail) Send(msg Message) error {
 
 	if msg.From == "" {
 		msg.From = m.FromAddress
