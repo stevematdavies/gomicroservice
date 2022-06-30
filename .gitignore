@@ -2,8 +2,8 @@ project/db/
 project/.vscode/
 .vscode/
 .idea/
-*/loggerApp
-*/frontApp
-*/mailerApp
-*/authApp
-*/brokerApp
+loggerApp
+frontApp
+mailerApp
+authApp
+brokerApp
