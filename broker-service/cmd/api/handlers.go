@@ -21,8 +21,10 @@ type LogPayload struct {
 }
 
 type MailPayload struct {
-	Name string `json:"name"`
-	Data string `json:"data"`
+	From    string `json:"from"`
+	To      string `json:"to"`
+	Subject string `json:"subject"`
+	Message string `json:"message"`
 }
 
 type RequestPayload struct {
@@ -55,7 +57,7 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	case "log":
 		app.log(w, requestPayload.Log)
 	case "mail":
-		app.email(w, requestPayload.Mail)
+		app.sendMail(w, requestPayload.Mail)
 	default:
 		_ = app.errorJSON(w, errors.New("unknown action"))
 	}
@@ -124,11 +126,8 @@ func (app *Config) log(w http.ResponseWriter, l LogPayload) {
 
 	client := &http.Client{}
 
-	fmt.Println("Client is ready")
-
 	response, err := client.Do(request)
 	if err != nil {
-		fmt.Println("Oh crap something went wrong!")
 		_ = app.errorJSON(w, err)
 		return
 	}
@@ -153,6 +152,40 @@ func (app *Config) log(w http.ResponseWriter, l LogPayload) {
 	_ = app.writeJSON(w, http.StatusAccepted, payload)
 }
 
-func (app *Config) email(w http.ResponseWriter, a MailPayload) {
-	return
+func (app *Config) sendMail(w http.ResponseWriter, m MailPayload) {
+	jsonData, _ := json.MarshalIndent(m, "", "\t")
+	request, err := http.NewRequest("POST", "http://mailer:8084/send", bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Println(err)
+		_ = app.errorJSON(w, err)
+	}
+
+	request.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+
+	response, err := client.Do(request)
+	if err != nil {
+		_ = app.errorJSON(w, err)
+		return
+	}
+
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			_ = app.errorJSON(w, err)
+			return
+		}
+	}(response.Body)
+
+	if response.StatusCode != http.StatusAccepted {
+		_ = app.errorJSON(w, err)
+		return
+	}
+
+	var payload jsonResponse
+	payload.Error = false
+	payload.Message = fmt.Sprintf("Email to: < %s > successfully sent from < %s >.", m.To, m.From)
+
+	_ = app.writeJSON(w, http.StatusAccepted, payload)
 }

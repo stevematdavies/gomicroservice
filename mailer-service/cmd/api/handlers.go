@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -13,9 +14,11 @@ type MailMessage struct {
 }
 
 func (app *Config) SendMail(w http.ResponseWriter, r *http.Request) {
+
 	var payload MailMessage
 
-	if err := app.readJSON(w, r, payload); err != nil {
+	err := app.readJSON(w, r, &payload)
+	if err != nil {
 		_ = app.errorJSON(w, err)
 		return
 	}
@@ -26,6 +29,8 @@ func (app *Config) SendMail(w http.ResponseWriter, r *http.Request) {
 		Subject: payload.Subject,
 		Data:    payload.Message,
 	}
+
+	log.Printf("HERE IN MAILER IS OK %v", msg)
 
 	if err := app.Mailer.Send(msg); err != nil {
 		_ = app.errorJSON(w, err)

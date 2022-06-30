@@ -136,15 +136,16 @@
 
         mlrBtn.addEventListener("click", async() => {
 
-            /*
             const headers = new Headers();
             headers.append("Content-Type", "application/json")
 
             const payload = {
                 action: "mail",
-                log: {
-                    name: "Logger Button Clicked",
-                    data: `Button was clicked at: ${new Date().toLocaleTimeString()}`
+                mail: {
+                    from: "testaja@testi.com",
+                    to: "themailserver@emailserver.com",
+                    Subject: "Sent from the microservice!",
+                    Message:"If you see this then this test was successful!"
                 }
             }
 
@@ -167,8 +168,7 @@
             } catch(e) {
                 output.innerHTML +=  `<br><br>Error: <span class="badge bg-danger">${e}</span>`
             }
-            */
-            console.log("Mailer action here!")
+
         })
 
     </script>

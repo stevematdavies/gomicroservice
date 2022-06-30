@@ -3,3 +3,7 @@ project/.vscode/
 .vscode/
 .idea/
 */loggerApp
+*/frontApp
+*/mailerApp
+*/authApp
+*/brokerApp
