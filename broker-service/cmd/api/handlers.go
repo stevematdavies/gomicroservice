@@ -1,6 +1,7 @@
 package main
 
 import (
+	"broker/event"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -188,4 +189,19 @@ func (app *Config) sendMail(w http.ResponseWriter, m MailPayload) {
 	payload.Message = fmt.Sprintf("Email to: < %s > successfully sent from < %s >.", m.To, m.From)
 
 	_ = app.writeJSON(w, http.StatusAccepted, payload)
+}
+
+func (app *Config) logEvent(w http.ResponseWriter, l LogPayload) {}
+
+func (app *Config) push2Q(name, msg string) error {
+	e, err := event.NewEventEmitter(app.Rmq)
+	if err != nil {
+		return err
+	}
+	p := LogPayload{name, msg}
+	j, _ := json.MarshalIndent(&p, "", "\t")
+	if err = e.Push(string(j), "log.INFO"); err != nil {
+		return err
+	}
+	return nil
 }
