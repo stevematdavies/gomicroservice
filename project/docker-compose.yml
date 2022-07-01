@@ -48,21 +48,21 @@ services:
     volumes:
       -  ./db/mongo/:/data/db
 
+  rabbitmq:
+    image: "rabbitmq:3.9-alpine"
+    container_name: "rabbitmq"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ./db/rabbitmq/:/var/lib/rabbitmq
+
   mailhog:
     image: 'mailhog/mailhog:latest'
     container_name: "mailhog"
     ports:
       - "1025:1025"
       - "8025:8025"
-
-  rabbitmq:
-    image: "rabbitmq:3.9-alpine"
-    container_name: "rabbitmq"
-    ports:
-      - "5672:5672"
-    volumes:
-      - ./db/rabbitmq/:/var/lib/rabbitmq
-
 
   logger:
     container_name: "logger"
@@ -86,3 +86,10 @@ services:
       MAIL_ENCRYPTION: none
       MAIL_FROM_NAME: "John Smith"
       MAIL_FROM_ADDRESS: "john.smith@example.com"
+
+  listener:
+    container_name: "listener"
+    build:
+      context: ./../listener-service
+      dockerfile: ./../listener-service/listener-service.dockerfile
+    restart: always

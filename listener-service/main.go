@@ -35,7 +35,7 @@ func connect() (*amqp091.Connection, error) {
 	var con *amqp091.Connection
 
 	for {
-		c, err := amqp091.Dial("amqp://guest:guest@localhost:5672")
+		c, err := amqp091.Dial("amqp://guest:guest@rabbitmq:5672")
 		if err != nil {
 			fmt.Println("RabbitMQ not ready...")
 			x++
