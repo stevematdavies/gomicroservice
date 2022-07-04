@@ -56,7 +56,7 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	case "auth":
 		app.authenticate(w, requestPayload.Auth)
 	case "log":
-		app.log(w, requestPayload.Log)
+		app.logEvent(w, requestPayload.Log)
 	case "mail":
 		app.sendMail(w, requestPayload.Mail)
 	default:
@@ -191,7 +191,16 @@ func (app *Config) sendMail(w http.ResponseWriter, m MailPayload) {
 	_ = app.writeJSON(w, http.StatusAccepted, payload)
 }
 
-func (app *Config) logEvent(w http.ResponseWriter, l LogPayload) {}
+func (app *Config) logEvent(w http.ResponseWriter, l LogPayload) {
+	if err := app.push2Q(l.Name, l.Data); err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+	app.writeJSON(w, http.StatusAccepted, jsonResponse{
+		Error:   false,
+		Message: "logged via Queue",
+	})
+}
 
 func (app *Config) push2Q(name, msg string) error {
 	e, err := event.NewEventEmitter(app.Rmq)
