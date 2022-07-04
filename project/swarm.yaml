@@ -5,7 +5,7 @@ services:
     image: "stevematdavies/broker-service:1.0.0"
     container_name: "broker"
     ports:
-      - "8081:80"
+      - "8081:8081"
     deploy:
       mode: replicated
       replicas: 1
@@ -21,7 +21,7 @@ services:
     image: "stevematdavies/authentication-service:1.0.0"
     container_name: "auth"
     ports:
-      - "8082:80"
+      - "8082:8082"
     environment:
       DSN: "host=db port=5432 user=postgres password=password dbname=gsmdb sslmode=disable timezone=UTC connect_timeout=5"
     deploy:
@@ -65,7 +65,7 @@ services:
     ports:
       - "1025:1025"
       - "8025:8025"
-      -
+
   mongo:
     image: 'mongo:4.2.16-bionic'
     container_name: "mongo"
