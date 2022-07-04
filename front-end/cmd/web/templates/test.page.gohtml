@@ -26,9 +26,9 @@
             </div>
         </div>
         <div class="col">
-            <h4 class="mt-5">Recieved</h4>
+            <h4 class="mt-5">Received</h4>
             <div class="mt-1" style="outline: 1px solid silver; padding:2em">
-                <pre id="recieved"><span class="text-muted">Nothing recieved yet...</span></pre>
+                <pre id="received"><span class="text-muted">Nothing recieved yet...</span></pre>
             </div>
         </div>
     </div>
@@ -45,12 +45,12 @@
         const grpcBtn    = document.getElementById("grpcBtn")
         const output     = document.getElementById("output")
         const sent       = document.getElementById("payload")
-        const recieved   = document.getElementById("recieved")
+        const received   = document.getElementById("received")
 
         clrBtn.addEventListener("click",() => {
             sent.innerHTML = ""
             output.innerHTML = ""
-            recieved.innerHTML = ""
+            received.innerHTML = ""
         })
 
         brokerBtn.addEventListener("click", async() => {
@@ -61,7 +61,7 @@
                 const request = await fetch("http://localhost:8081",body)
                 const data = await request.json()
                 sent.innerHTML = "empty post request"
-                recieved.innerHTML = JSON.stringify(data, undefined, 4)
+                received.innerHTML = JSON.stringify(data, undefined, 4)
                 output.innerHTML += `<br><strong>Response from broker service</strong>: <span class="badge bg-success">${data.message}</span>`
             } catch(e) { 
                 output.innerHTML +=  `<br><br>Error:  <span class="badge bg-danger">${e}</span>`
@@ -92,7 +92,7 @@
                
                 const data = await request.json()
                 sent.innerHTML = JSON.stringify(payload, undefined, 4)
-                recieved.innerHTML = JSON.stringify(data, undefined, 4)
+                received.innerHTML = JSON.stringify(data, undefined, 4)
                 if(data.error){
                     output.innerHTML += `<br><strong>Error: </strong>${data.message}`
                 } else {
@@ -125,7 +125,7 @@
                 const request = await fetch("http://localhost:8081/handle",body)
                 const data = await request.json()
                 sent.innerHTML = JSON.stringify(payload, undefined, 4)
-                recieved.innerHTML = JSON.stringify(data, undefined, 4)
+                received.innerHTML = JSON.stringify(data, undefined, 4)
                 if(data.error){
                     output.innerHTML += `<br><strong>Error: </strong>${data.message}`
                 } else {
@@ -158,7 +158,7 @@
                 const request = await fetch("http://localhost:8081/log-grpc",body)
                 const data = await request.json()
                 sent.innerHTML = JSON.stringify(payload, undefined, 4)
-                recieved.innerHTML = JSON.stringify(data, undefined, 4)
+                received.innerHTML = JSON.stringify(data, undefined, 4)
                 if(data.error){
                     output.innerHTML += `<br><strong>Error: </strong>${data.message}`
                 } else {
@@ -194,7 +194,7 @@
                 const request = await fetch("http://localhost:8081/handle",body)
                 const data = await request.json()
                 sent.innerHTML = JSON.stringify(payload, undefined, 4)
-                recieved.innerHTML = JSON.stringify(data, undefined, 4)
+                received.innerHTML = JSON.stringify(data, undefined, 4)
                 if(data.error){
                     output.innerHTML += `<br><strong>Error: </strong>${data.message}`
                 } else {
