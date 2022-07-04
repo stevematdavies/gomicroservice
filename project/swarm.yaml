@@ -1,0 +1,98 @@
+version: "3"
+
+services:
+  broker:
+    image: "stevematdavies/broker-service:1.0.0"
+    container_name: "broker"
+    ports:
+      - "8081:80"
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  listener:
+    image: "stevematdavies/listener-service:1.0.0"
+    container_name: "listener"
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  auth:
+    image: "stevematdavies/authentication-service:1.0.0"
+    container_name: "auth"
+    ports:
+      - "8082:80"
+    environment:
+      DSN: "host=db port=5432 user=postgres password=password dbname=gsmdb sslmode=disable timezone=UTC connect_timeout=5"
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  logger:
+    image: "stevematdavies/logger-service:1.0.0"
+    container_name: "logger"
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  mailer:
+    image: 'stevematdavies/mailer-service:1.0.0'
+    container_name: "mailer"
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      MAIL_DOMAIN: localhost
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      MAIL_ENCRYPTION: none
+      MAIL_FROM_NAME: "John Smith"
+      MAIL_FROM_ADDRESS: "john.smith@example.com"
+
+  rabbitmq:
+    image: "rabbitmq:3.9-alpine"
+    container_name: "rabbitmq"
+    deploy:
+      mode: global
+
+  mailhog:
+    image: 'mailhog/mailhog:latest'
+    container_name: "mailhog"
+    deploy:
+      mode: global
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+      -
+  mongo:
+    image: 'mongo:4.2.16-bionic'
+    container_name: "mongo"
+    ports:
+      - "27017:27017"
+    deploy:
+      mode: global
+    environment:
+      MONGO_INITDB_DATABASE: "logs"
+      MONGO_INITDB_ROOT_USERNAME: "admin"
+      MONGO_INITDB_ROOT_PASSWORD: "password"
+    volumes:
+      - ./db/mongo/:/data/db
+
+  db:
+    container_name: "postgres"
+    image: 'postgres:14.4'
+    ports:
+      - "5432:5432"
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: gsmdb
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - ./db/postgres/:/var/lib/postgresql/data/
