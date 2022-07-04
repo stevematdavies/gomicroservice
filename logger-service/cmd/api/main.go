@@ -16,8 +16,8 @@ import (
 
 const (
 	webPort  = "8083"
-	grpcPort = "8500"
-	rpcPort  = "8501"
+	grpcPort = "8901"
+	rpcPort  = ":5001"
 	mongoURL = "mongodb://mongo:27017"
 )
 
@@ -43,7 +43,7 @@ func connectToMongo() (*mongo.Client, error) {
 
 func (app *Config) rpcListen() error {
 	log.Println("Starting RPC Server on port: ", rpcPort)
-	listen, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%s", webPort))
+	listen, err := net.Listen("tcp", rpcPort)
 	if err != nil {
 		return err
 	}

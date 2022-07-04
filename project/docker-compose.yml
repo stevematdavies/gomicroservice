@@ -15,16 +15,6 @@ services:
         POSTGRES_HOST_AUTH_METHOD: trust
       volumes:
         - ./db/postgres/:/var/lib/postgresql/data/
-
-  broker:
-    container_name: "broker"
-    build:
-      context: ./../broker-service
-      dockerfile: ./../broker-service/broker-service.dockerfile
-    ports:
-      - "8081:8081"
-    restart: always
-
   auth:
     container_name: "auth"
     build:
@@ -69,6 +59,15 @@ services:
     build:
       context: ./../logger-service
       dockerfile: ./../logger-service/logger-service.dockerfile
+    restart: always
+
+  broker:
+    container_name: "broker"
+    build:
+      context: ./../broker-service
+      dockerfile: ./../broker-service/broker-service.dockerfile
+    ports:
+      - "8081:8081"
     restart: always
 
   mailer:

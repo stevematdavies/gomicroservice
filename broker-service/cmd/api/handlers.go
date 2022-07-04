@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/rpc"
 )
 
 type AuthPayload struct {
@@ -26,6 +27,11 @@ type MailPayload struct {
 	To      string `json:"to"`
 	Subject string `json:"subject"`
 	Message string `json:"message"`
+}
+
+type RPCPayload struct {
+	Name string
+	Data string
 }
 
 type RequestPayload struct {
@@ -56,7 +62,7 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	case "auth":
 		app.authenticate(w, requestPayload.Auth)
 	case "log":
-		app.logEvent(w, requestPayload.Log)
+		app.rpcLog(w, requestPayload.Log)
 	case "mail":
 		app.sendMail(w, requestPayload.Mail)
 	default:
@@ -115,6 +121,7 @@ func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 	_ = app.writeJSON(w, http.StatusAccepted, payload)
 }
 
+// Log direct to logger service
 func (app *Config) log(w http.ResponseWriter, l LogPayload) {
 	jsonData, _ := json.MarshalIndent(l, "", "\t")
 	request, err := http.NewRequest("POST", "http://logger:8083/log", bytes.NewBuffer(jsonData))
@@ -153,6 +160,42 @@ func (app *Config) log(w http.ResponseWriter, l LogPayload) {
 	_ = app.writeJSON(w, http.StatusAccepted, payload)
 }
 
+// Log via RabbitMQ
+func (app *Config) logEvent(w http.ResponseWriter, l LogPayload) {
+	if err := app.push2Q(l.Name, l.Data); err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+	app.writeJSON(w, http.StatusAccepted, jsonResponse{
+		Error:   false,
+		Message: "logged via Queue",
+	})
+}
+
+// Log via RPC
+func (app *Config) rpcLog(w http.ResponseWriter, l LogPayload) {
+	client, err := rpc.Dial("tcp", "logger:5001")
+	if err != nil {
+		log.Println("Error dialing RPC", err)
+		app.errorJSON(w, err)
+		return
+	}
+
+	var result string
+	if err = client.Call("RPCServer.LogInfo", RPCPayload{
+		Name: l.Name,
+		Data: l.Data,
+	}, &result); err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	app.writeJSON(w, http.StatusAccepted, jsonResponse{
+		Error:   false,
+		Message: result,
+	})
+}
+
 func (app *Config) sendMail(w http.ResponseWriter, m MailPayload) {
 	jsonData, _ := json.MarshalIndent(m, "", "\t")
 	request, err := http.NewRequest("POST", "http://mailer:8084/send", bytes.NewBuffer(jsonData))
@@ -189,17 +232,6 @@ func (app *Config) sendMail(w http.ResponseWriter, m MailPayload) {
 	payload.Message = fmt.Sprintf("Email to: < %s > successfully sent from < %s >.", m.To, m.From)
 
 	_ = app.writeJSON(w, http.StatusAccepted, payload)
-}
-
-func (app *Config) logEvent(w http.ResponseWriter, l LogPayload) {
-	if err := app.push2Q(l.Name, l.Data); err != nil {
-		app.errorJSON(w, err)
-		return
-	}
-	app.writeJSON(w, http.StatusAccepted, jsonResponse{
-		Error:   false,
-		Message: "logged via Queue",
-	})
 }
 
 func (app *Config) push2Q(name, msg string) error {
