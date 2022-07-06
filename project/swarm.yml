@@ -6,7 +6,6 @@ services:
     image: 'postgres:14.4'
     ports:
       - "5432:5432"
-    restart: always
     deploy:
       mode: replicated
       replicas: 1
@@ -19,7 +18,7 @@ services:
       - ./db/postgres/:/var/lib/postgresql/data/
 
   broker:
-    image: "stevematdavies/broker-service:1.0.0"
+    image: "stevematdavies/broker-service:1.0.1"
     deploy:
       mode: replicated
       replicas: 1
@@ -85,18 +84,6 @@ services:
     volumes:
       - ./db/mongo/:/data/db
 
-  caddy:
-    image: stevematdavies/micro-caddy:0.0.0
-    deploy:
-      mode: replicated
-      replicas: 1
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./caddy/data/:/data
-      - ./caddy/config/:/config
-
   client:
     image: stevematdavies/microservice-frontend:1.0.0
     deploy:
@@ -104,5 +91,6 @@ services:
       replicas: 1
 
 volumes:
-  caddy:
+  caddy_data:
     external: true
+  caddy_config:
