@@ -85,4 +85,8 @@ services:
     volumes:
       - ./db/mongo/:/data/db
 
-
+  client:
+    image: stevematdavies/microservice-frontend:1.0.0
+    deploy:
+      mode: replicated
+      replicas: 1
