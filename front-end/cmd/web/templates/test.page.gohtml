@@ -57,13 +57,15 @@
             const body = {
                 method: 'POST'
             }
+
             try {
-                const request = await fetch("http://localhost:8081",body)
+                const request = await fetch("http://localhost:8081/",body)
                 const data = await request.json()
+
                 sent.innerHTML = "empty post request"
                 received.innerHTML = JSON.stringify(data, undefined, 4)
                 output.innerHTML += `<br><strong>Response from broker service</strong>: <span class="badge bg-success">${data.message}</span>`
-            } catch(e) { 
+            } catch(e) {
                 output.innerHTML +=  `<br><br>Error:  <span class="badge bg-danger">${e}</span>`
             }
         })

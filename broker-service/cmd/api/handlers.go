@@ -46,6 +46,13 @@ type RequestPayload struct {
 	Mail   MailPayload `json:"mail,omitempty"`
 }
 
+func (app *Config) Health(w http.ResponseWriter, _ *http.Request) {
+	app.writeJSON(w, http.StatusOK, jsonResponse{
+		Error:   false,
+		Message: "Broker is Healthy",
+	})
+}
+
 func (app *Config) Broker(w http.ResponseWriter, _ *http.Request) {
 	payload := jsonResponse{
 		Error:   false,
@@ -57,6 +64,8 @@ func (app *Config) Broker(w http.ResponseWriter, _ *http.Request) {
 
 func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	var requestPayload RequestPayload
+
+	fmt.Println("Handling submission")
 
 	if err := app.readJSON(w, r, &requestPayload); err != nil {
 		_ = app.errorJSON(w, err)

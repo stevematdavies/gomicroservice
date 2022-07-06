@@ -2,19 +2,7 @@ version: '3.8'
 
 services:
 
-  db:
-      container_name: "postgres"
-      image: 'postgres:14.4'
-      ports:
-        - "5432:5432"
-      restart: always
-      environment:  
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: password
-        POSTGRES_DB: gsmdb
-        POSTGRES_HOST_AUTH_METHOD: trust
-      volumes:
-        - ./db/postgres/:/var/lib/postgresql/data/
+
   auth:
     container_name: "auth"
     build:
@@ -92,3 +80,17 @@ services:
       context: ./../listener-service
       dockerfile: ./../listener-service/listener-service.dockerfile
     restart: always
+
+  db:
+    container_name: "postgres"
+    image: 'postgres:14.4'
+    ports:
+      - "5432:5432"
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: gsmdb
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - ./db/postgres/:/var/lib/postgresql/data/

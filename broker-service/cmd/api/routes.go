@@ -20,6 +20,7 @@ func (app *Config) routes() http.Handler {
 	}))
 	mux.Use(middleware.Heartbeat("/ping"))
 	mux.Post("/", app.Broker)
+	mux.Get("/health", app.Health)
 	mux.Post("/handle", app.HandleSubmission)
 	mux.Post("/log-grpc", app.GRPCLog)
 	return mux
