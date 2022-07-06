@@ -1,4 +1,5 @@
 FRONT_END_BINARY=frontApp
+FRONT_BINARY=frontEndApp
 BROKER_BINARY=brokerApp
 LOGGER_BINARY=loggerApp
 MAILER_BINARY=mailerApp
@@ -10,7 +11,7 @@ up:
 	docker-compose up -d
 	@echo "Docker images started!"
 
-up_build: build_broker build_auth build_logger build_mailer build_listener
+up_build: build_broker build_auth build_logger build_mailer build_listener build_front_end
 	@echo "Stopping docker images if running"
 	docker-compose down
 	@echo "Building (when required) and starting docker images..."
@@ -20,6 +21,11 @@ up_build: build_broker build_auth build_logger build_mailer build_listener
 down:
 	@echo "Stopping docker compose..."
 	docker-compose down
+	@echo "Done!"
+
+build_front_end:
+	@echo "Building application front end binary..."
+	cd ../front-end && env GOOS=linux CGO_ENABLED=0 go build -o ${FRONT_BINARY} ./cmd/web
 	@echo "Done!"
 
 build_broker:
