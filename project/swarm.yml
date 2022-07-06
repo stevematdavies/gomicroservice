@@ -85,8 +85,24 @@ services:
     volumes:
       - ./db/mongo/:/data/db
 
+  caddy:
+    image: stevematdavies/micro-caddy:0.0.0
+    deploy:
+      mode: replicated
+      replicas: 1
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/data/:/data
+      - ./caddy/config/:/config
+
   client:
     image: stevematdavies/microservice-frontend:1.0.0
     deploy:
       mode: replicated
       replicas: 1
+
+volumes:
+  caddy:
+    external: true
