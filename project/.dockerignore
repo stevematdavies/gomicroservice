@@ -1,1 +1,4 @@
 db
+Makefile
+docker-compose.yml
+swarm.yml
